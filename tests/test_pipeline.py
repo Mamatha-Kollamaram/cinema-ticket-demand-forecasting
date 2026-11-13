@@ -116,3 +116,4 @@ def test_champion_model_loaded_and_satisfies_capacity_bounds():
         cap = test_cases.loc[i, "screen_capacity"]
         assert 0 <= preds[i] <= cap, f"Prediction {preds[i]} violated physical capacity {cap}"
         assert 0 <= lower[i] <= upper[i] <= cap, f"Intervals [{lower[i]}, {upper[i]}] violated capacity {cap}"
+

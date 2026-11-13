@@ -58,3 +58,4 @@ STAFF_ALLOCATION_RULES = {
     "medium_demand": {"max_occupancy": 0.70, "concession_staff": 4, "ushers": 2, "cleaning_staff": 2},
     "high_demand": {"max_occupancy": 1.00, "concession_staff": 7, "ushers": 4, "cleaning_staff": 3},
 }
+

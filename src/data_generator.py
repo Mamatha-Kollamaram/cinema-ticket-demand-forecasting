@@ -275,3 +275,4 @@ def save_dataset_and_metadata(df: pd.DataFrame):
 if __name__ == "__main__":
     df_generated = generate_dataset()
     save_dataset_and_metadata(df_generated)
+

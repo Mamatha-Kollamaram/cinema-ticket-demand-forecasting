@@ -210,3 +210,4 @@ curl -X POST http://127.0.0.1:8000/explain \
 
 ## 📜 License
 This project and synthetic dataset are dedicated to the public domain under the **Creative Commons Zero (CC0)** / MIT Open License for assessment review.
+

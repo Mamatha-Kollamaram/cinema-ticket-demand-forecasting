@@ -206,3 +206,4 @@ def predict_batch(shows: List[ShowPredictionInput]):
             "is_cold_start": bool(s.is_cold_start or s.days_since_release <= 3),
         })
     return {"total_shows": len(results), "predictions": results}
+
