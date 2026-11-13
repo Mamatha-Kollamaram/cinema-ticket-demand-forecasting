@@ -62,8 +62,6 @@ Algions_Assignment/
 ├── .gitignore                  # Git ignore rules
 ├── LICENSE                     # Open assessment license
 ├── README.md                   # Complete repository documentation
-├── REPORT.md                   # Comprehensive technical evaluation report
-├── DEMO_SCRIPT.md              # 3-5 minute video presentation script
 ├── requirements.txt            # Python dependencies
 ├── sample_request.json         # Ready-to-use API payload
 ├── data/
