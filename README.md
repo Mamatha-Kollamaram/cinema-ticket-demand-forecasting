@@ -5,10 +5,7 @@
 [![scikit-learn](https://img.shields.io/badge/scikit--learn-1.3%2B-F7931E.svg)](https://scikit-learn.org/)
 [![License: CC0](https://img.shields.io/badge/License-CC0-lightgrey.svg)](LICENSE)
 [![Tests: Pytest Passed](https://img.shields.io/badge/tests-9%20passed-brightgreen.svg)](tests/)
-
-> **ALGIONS AI LABS — Advanced Individual Project Assessment**  
-> **Role:** AI & Machine Learning Intern  
-> **Domain:** Cinema Hall Ticket Booking  
+ 
 > **Problem:** Capacity-Aware Show-Level Ticket Demand Forecasting & Staff Allocation  
 
 ---
