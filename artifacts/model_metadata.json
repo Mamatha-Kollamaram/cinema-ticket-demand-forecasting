@@ -1,0 +1,105 @@
+{
+  "model_name": "GradientBoosting",
+  "algorithm": "HistGradientBoostingRegressor with Capacity Bounds",
+  "random_seed": 42,
+  "forecast_horizon": "T-24h",
+  "training_samples": 5103,
+  "validation_samples": 1093,
+  "test_samples": 1094,
+  "train_date_range": [
+    "2026-01-01",
+    "2026-06-20"
+  ],
+  "test_date_range": [
+    "2026-07-26",
+    "2026-08-31"
+  ],
+  "residual_std": 6.758927946824185,
+  "raw_feature_columns": [
+    "genre",
+    "time_slot",
+    "screen_tier",
+    "critic_rating",
+    "star_power",
+    "runtime_minutes",
+    "days_since_release",
+    "is_cold_start",
+    "screen_capacity",
+    "ticket_price",
+    "show_hour",
+    "day_of_week",
+    "is_weekend",
+    "is_holiday",
+    "competing_releases_count",
+    "prebooking_pace_t24",
+    "historical_movie_avg_occupancy"
+  ],
+  "model_comparison": {
+    "CapacityAdjustedBaseline": {
+      "validation_metrics": {
+        "MAE": 34.39,
+        "RMSE": 47.77,
+        "WAPE_pct": 48.27,
+        "Occupancy_MAE_pct": 15.43,
+        "Capacity_Overrun_pct": 0.0
+      },
+      "test_metrics": {
+        "MAE": 36.37,
+        "RMSE": 50.47,
+        "WAPE_pct": 52.72,
+        "Occupancy_MAE_pct": 16.52,
+        "Capacity_Overrun_pct": 0.0
+      },
+      "subgroup_test_metrics": {
+        "cold_start_mae": 47.34,
+        "mature_release_mae": 35.51,
+        "weekend_mae": 47.48,
+        "weekday_mae": 28.19
+      }
+    },
+    "RidgeRegression": {
+      "validation_metrics": {
+        "MAE": 7.43,
+        "RMSE": 11.56,
+        "WAPE_pct": 10.43,
+        "Occupancy_MAE_pct": 3.39,
+        "Capacity_Overrun_pct": 0.0
+      },
+      "test_metrics": {
+        "MAE": 7.51,
+        "RMSE": 11.06,
+        "WAPE_pct": 10.89,
+        "Occupancy_MAE_pct": 3.46,
+        "Capacity_Overrun_pct": 0.0
+      },
+      "subgroup_test_metrics": {
+        "cold_start_mae": 10.2,
+        "mature_release_mae": 7.3,
+        "weekend_mae": 8.6,
+        "weekday_mae": 6.72
+      }
+    },
+    "GradientBoosting": {
+      "validation_metrics": {
+        "MAE": 5.99,
+        "RMSE": 10.24,
+        "WAPE_pct": 8.41,
+        "Occupancy_MAE_pct": 2.56,
+        "Capacity_Overrun_pct": 0.0
+      },
+      "test_metrics": {
+        "MAE": 6.44,
+        "RMSE": 10.35,
+        "WAPE_pct": 9.33,
+        "Occupancy_MAE_pct": 2.8,
+        "Capacity_Overrun_pct": 0.0
+      },
+      "subgroup_test_metrics": {
+        "cold_start_mae": 7.62,
+        "mature_release_mae": 6.34,
+        "weekend_mae": 7.61,
+        "weekday_mae": 5.57
+      }
+    }
+  }
+}

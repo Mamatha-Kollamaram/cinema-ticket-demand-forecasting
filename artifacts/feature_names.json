@@ -1,0 +1,22 @@
+{
+  "raw_features": [
+    "genre",
+    "time_slot",
+    "screen_tier",
+    "critic_rating",
+    "star_power",
+    "runtime_minutes",
+    "days_since_release",
+    "is_cold_start",
+    "screen_capacity",
+    "ticket_price",
+    "show_hour",
+    "day_of_week",
+    "is_weekend",
+    "is_holiday",
+    "competing_releases_count",
+    "prebooking_pace_t24",
+    "historical_movie_avg_occupancy"
+  ],
+  "target": "tickets_sold"
+}

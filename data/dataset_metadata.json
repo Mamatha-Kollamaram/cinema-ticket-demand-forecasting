@@ -1,0 +1,55 @@
+{
+  "dataset_name": "Cinema Hall Ticket Demand Show-Level Dataset",
+  "description": "Chronological show-level ticketing observations for multi-screen cinema demand forecasting.",
+  "record_count": 7290,
+  "date_range_start": "2026-01-01",
+  "date_range_end": "2026-08-31",
+  "target_variables": [
+    "tickets_sold",
+    "occupancy_rate"
+  ],
+  "forecast_horizon": "T-24h (24 hours prior to showtime)",
+  "prediction_unit": "Individual Show screening (Screen, Showtime, Movie, Date)",
+  "num_screens": 6,
+  "total_movies": 25,
+  "genres": [
+    "Action_SciFi",
+    "Drama",
+    "Comedy",
+    "Horror_Thriller",
+    "Romantic_Drama",
+    "Animation_Family"
+  ],
+  "cold_start_shows": 1110,
+  "mature_shows": 6180,
+  "features": {
+    "temporal": [
+      "show_hour",
+      "day_of_week",
+      "is_weekend",
+      "is_holiday",
+      "time_slot"
+    ],
+    "movie_attributes": [
+      "genre",
+      "critic_rating",
+      "star_power",
+      "runtime_minutes",
+      "days_since_release",
+      "is_cold_start"
+    ],
+    "screen_attributes": [
+      "screen_id",
+      "screen_tier",
+      "screen_capacity",
+      "ticket_price"
+    ],
+    "signals_at_t24": [
+      "prebooking_pace_t24",
+      "historical_movie_avg_occupancy",
+      "competing_releases_count"
+    ]
+  },
+  "license": "Creative Commons Zero (CC0) / Public Domain dedication for assessment use. No PII or proprietary cinema data.",
+  "generated_at": "2026-11-13T22:09:21.117730"
+}

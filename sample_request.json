@@ -1,0 +1,21 @@
+{
+  "movie_title": "Aegis Protocol",
+  "genre": "Action_SciFi",
+  "critic_rating": 8.7,
+  "star_power": 9.5,
+  "runtime_minutes": 140,
+  "days_since_release": 1,
+  "is_cold_start": 1,
+  "screen_id": "Screen_1_IMAX",
+  "screen_tier": "IMAX",
+  "screen_capacity": 420,
+  "ticket_price": 22.5,
+  "time_slot": "Night_Prime",
+  "show_hour": 20,
+  "day_of_week": 5,
+  "is_weekend": 1,
+  "is_holiday": 0,
+  "competing_releases_count": 4,
+  "prebooking_pace_t24": 210,
+  "historical_movie_avg_occupancy": 0.65
+}

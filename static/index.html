@@ -1,0 +1,528 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Cinema Ticket Demand Forecasting | Decision Support System</title>
+  <link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+
+  <header class="header">
+    <div class="header-left">
+      <h1>
+        🎬 Cinema Ticket Demand Forecasting
+        <span class="badge-tag">T-24h Decision Support</span>
+      </h1>
+      <p class="header-subtitle">Capacity-Aware Show-Level Demand & Staff Allocation Engine</p>
+    </div>
+    <div class="header-right">
+      <a href="/docs" target="_blank" class="api-link">⚡ Swagger REST API (/docs)</a>
+    </div>
+  </header>
+
+  <main class="container">
+    <!-- Presets Toolbar -->
+    <div class="presets-bar">
+      <span class="presets-label">Quick Scenarios:</span>
+      <button class="preset-btn" onclick="applyPreset('imax_blockbuster')">🚀 IMAX Opening Weekend (Cold-Start)</button>
+      <button class="preset-btn" onclick="applyPreset('midweek_drama')">🎭 Midweek Indie Drama (Off-Peak)</button>
+      <button class="preset-btn" onclick="applyPreset('family_weekend')">🍿 Family Animation Matinee</button>
+      <button class="preset-btn" onclick="applyPreset('vip_prime')">👑 VIP Gold Friday Night</button>
+    </div>
+
+    <!-- Tabs Navigation -->
+    <div class="tabs">
+      <button class="tab-btn active" id="tabForecastBtn" onclick="switchTab('forecast')">Interactive Show Forecaster</button>
+      <button class="tab-btn" id="tabMetricsBtn" onclick="switchTab('metrics')">Model Comparison & Test Metrics</button>
+    </div>
+
+    <!-- TAB 1: FORECASTER -->
+    <div id="forecastTab" class="grid-layout">
+      <!-- Input Panel -->
+      <section class="card">
+        <h2 class="card-title">
+          <span>Show Configuration (T-24h)</span>
+          <span id="coldStartBadge" class="badge-tag" style="display:none; color:#fbbf24; border-color:#fbbf24;">Cold-Start Show</span>
+        </h2>
+
+        <form id="forecastForm" onsubmit="handleForecastSubmit(event)">
+          <div class="form-group">
+            <label class="form-label" for="movie_title">Movie Title</label>
+            <input type="text" id="movie_title" class="form-input" value="Aegis Protocol" required>
+          </div>
+
+          <div class="row-2">
+            <div class="form-group">
+              <label class="form-label" for="genre">Genre</label>
+              <select id="genre" class="form-select">
+                <option value="Action_SciFi">Action & Sci-Fi</option>
+                <option value="Drama">Drama</option>
+                <option value="Comedy">Comedy</option>
+                <option value="Horror_Thriller">Horror & Thriller</option>
+                <option value="Animation_Family">Animation & Family</option>
+                <option value="Romantic_Drama">Romantic Drama</option>
+              </select>
+            </div>
+
+            <div class="form-group">
+              <label class="form-label" for="screen_id">Screen & Hall Tier</label>
+              <select id="screen_id" class="form-select" onchange="handleScreenChange()">
+                <option value="Screen_1_IMAX">Screen 1 (IMAX - 420 seats)</option>
+                <option value="Screen_2_Large">Screen 2 (Large - 300 seats)</option>
+                <option value="Screen_3_MidA">Screen 3 (Mid - 220 seats)</option>
+                <option value="Screen_4_MidB">Screen 4 (Mid - 180 seats)</option>
+                <option value="Screen_5_VIP">Screen 5 (VIP Gold - 80 seats)</option>
+                <option value="Screen_6_Classic">Screen 6 (Classic - 150 seats)</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="row-2">
+            <div class="form-group">
+              <label class="form-label" for="time_slot">Showtime Slot</label>
+              <select id="time_slot" class="form-select" onchange="handleTimeSlotChange()">
+                <option value="Morning">Morning (10:00)</option>
+                <option value="Matinee">Matinee (13:30)</option>
+                <option value="Evening_Prime">Evening Prime (17:30)</option>
+                <option value="Night_Prime" selected>Night Prime (20:45)</option>
+                <option value="Late_Night">Late Night (23:30)</option>
+              </select>
+            </div>
+
+            <div class="form-group">
+              <label class="form-label" for="ticket_price">Ticket Price ($)</label>
+              <input type="number" id="ticket_price" class="form-input" value="18.50" step="0.5" min="5" max="60" required>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <div class="form-label">
+              <span>Days Since Release</span>
+              <span id="daysVal" style="color:var(--accent-cyan); font-weight:700;">1 day (Opening)</span>
+            </div>
+            <input type="range" id="days_since_release" class="form-range" min="0" max="45" value="1" oninput="updateDaysSlider(this.value)">
+          </div>
+
+          <div class="row-2">
+            <div class="form-group">
+              <div class="form-label">
+                <span>Critic Rating</span>
+                <span id="ratingVal" style="color:#fcd34d;">8.7 / 10</span>
+              </div>
+              <input type="range" id="critic_rating" class="form-range" min="1.0" max="10.0" step="0.1" value="8.7" oninput="document.getElementById('ratingVal').innerText = this.value + ' / 10'">
+            </div>
+
+            <div class="form-group">
+              <div class="form-label">
+                <span>Star Power Index</span>
+                <span id="starVal" style="color:#fcd34d;">9.5 / 10</span>
+              </div>
+              <input type="range" id="star_power" class="form-range" min="1.0" max="10.0" step="0.1" value="9.5" oninput="document.getElementById('starVal').innerText = this.value + ' / 10'">
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label" for="prebooking_pace_t24">
+              <span>Advance Bookings at T-24h (Tickets)</span>
+              <span id="prebookRatioVal" style="color:var(--text-muted);">~48% of hall</span>
+            </label>
+            <input type="number" id="prebooking_pace_t24" class="form-input" value="205" min="0" max="420" oninput="updatePrebookHelper()" required>
+          </div>
+
+          <div class="checkbox-group">
+            <label class="checkbox-label">
+              <input type="checkbox" id="is_weekend" checked> Weekend / Friday Show
+            </label>
+            <label class="checkbox-label">
+              <input type="checkbox" id="is_holiday"> Public Holiday
+            </label>
+          </div>
+
+          <button type="submit" class="submit-btn" id="forecastBtn">
+            🔮 Generate Capacity-Bounded Forecast
+          </button>
+        </form>
+      </section>
+
+      <!-- Output Panel -->
+      <section class="card">
+        <h2 class="card-title">Forecast & Operational Advisory</h2>
+
+        <div id="outputPlaceholder" style="padding: 60px 20px; text-align: center; color: var(--text-muted);">
+          <div style="font-size: 2.5rem; margin-bottom: 12px;">📊</div>
+          <p>Click "Generate Capacity-Bounded Forecast" or select a preset scenario to view the live decision-support advisory.</p>
+        </div>
+
+        <div id="resultsContent" style="display:none;">
+          <!-- Metric Highlights -->
+          <div class="metric-highlight">
+            <div class="metric-box">
+              <div class="metric-value" id="resPredictedTickets">--</div>
+              <div class="metric-unit">Projected Tickets Sold</div>
+              <div style="font-size: 0.78rem; color: #9ca3af; margin-top: 4px;">
+                Physical Limit: <span id="resCapacity">--</span> seats
+              </div>
+            </div>
+
+            <div class="metric-box">
+              <div class="metric-value" id="resOccupancy">--%</div>
+              <div class="metric-unit">Expected Occupancy Rate</div>
+              <div class="progress-bar-bg">
+                <div class="progress-bar-fill" id="occupancyFill"></div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Cold Start Banner -->
+          <div id="coldStartAlert" class="alert-banner alert-warning" style="display:none;">
+            <span style="font-size: 1.3rem;">⚠️</span>
+            <div>
+              <strong>Cold-Start Theatrical Window Active</strong>
+              <div id="coldStartText" style="margin-top: 2px;">Movie has limited historical show data. Confidence bounds reflect opening uncertainty.</div>
+            </div>
+          </div>
+
+          <!-- Confidence Interval Card -->
+          <div class="alert-banner alert-info">
+            <span style="font-size: 1.3rem;">🎯</span>
+            <div>
+              <strong>80% Prediction Uncertainty Interval</strong>
+              <div id="intervalText" style="margin-top: 2px;">
+                Expected ticket sales: <strong id="resLower">--</strong> to <strong id="resUpper">--</strong> seats (±<span id="resMargin">--</span> seats).
+              </div>
+            </div>
+          </div>
+
+          <!-- Staffing Allocation -->
+          <h3 class="section-subtitle">Recommended Staff Allocation</h3>
+          <div class="staff-grid">
+            <div class="staff-item">
+              <div class="staff-num" id="staffConcessions">--</div>
+              <div class="staff-label">Concessions Staff</div>
+            </div>
+            <div class="staff-item">
+              <div class="staff-num" id="staffUshers">--</div>
+              <div class="staff-label">Floor Ushers</div>
+            </div>
+            <div class="staff-item">
+              <div class="staff-num" id="staffCleaning">--</div>
+              <div class="staff-label">Cleaning Crew</div>
+            </div>
+          </div>
+
+          <!-- Screen Allocation Advisory -->
+          <h3 class="section-subtitle">Screen Utilization & Swap Advisory</h3>
+          <div id="screenAdvisoryBox" class="driver-pill" style="border-left: 4px solid var(--accent-cyan);">
+            <div class="driver-head" id="advisoryTitle">Screen Allocation</div>
+            <div class="driver-desc" id="advisoryMessage">--</div>
+          </div>
+
+          <!-- Key Drivers -->
+          <h3 class="section-subtitle">Primary Demand Drivers</h3>
+          <div id="driversContainer"></div>
+        </div>
+      </section>
+    </div>
+
+    <!-- TAB 2: METRICS & COMPARISON -->
+    <div id="metricsTab" style="display:none;">
+      <section class="card">
+        <h2 class="card-title">Model Benchmarks on Held-Out Test Set (Chronological 15%)</h2>
+        <p style="color:var(--text-muted); font-size:0.88rem; margin-bottom:18px;">
+          Chronological holdout: 1,094 shows (2026-07-26 to 2026-08-31). Zero target leakage.
+        </p>
+        
+        <div class="table-responsive">
+          <table class="eval-table">
+            <thead>
+              <tr>
+                <th>Model Architecture</th>
+                <th>MAE (Tickets)</th>
+                <th>RMSE (Tickets)</th>
+                <th>WAPE (%)</th>
+                <th>Occupancy MAE (%)</th>
+                <th>Capacity Overrun (%)</th>
+                <th>Status</th>
+              </tr>
+            </thead>
+            <tbody id="metricsTableBody">
+              <tr><td colspan="7" style="text-align:center;">Loading model metrics...</td></tr>
+            </tbody>
+          </table>
+        </div>
+
+        <div style="margin-top: 24px; display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
+          <div class="card" style="background:#0f1523; padding:16px;">
+            <h3 style="font-size:0.95rem; margin-bottom:8px;">Subgroup Slice: Cold-Start vs Mature</h3>
+            <div id="subgroupColdStart" style="font-size:0.85rem; color:#d1d5db;">Loading...</div>
+          </div>
+          <div class="card" style="background:#0f1523; padding:16px;">
+            <h3 style="font-size:0.95rem; margin-bottom:8px;">Subgroup Slice: Screen Tiers</h3>
+            <div id="subgroupScreenTier" style="font-size:0.85rem; color:#d1d5db;">Loading...</div>
+          </div>
+        </div>
+      </section>
+    </div>
+
+  </main>
+
+  <script>
+    const SCREEN_SPECS = {
+      "Screen_1_IMAX": { capacity: 420, tier: "IMAX" },
+      "Screen_2_Large": { capacity: 300, tier: "Premium" },
+      "Screen_3_MidA": { capacity: 220, tier: "Standard" },
+      "Screen_4_MidB": { capacity: 180, tier: "Standard" },
+      "Screen_5_VIP": { capacity: 80, tier: "VIP_Gold" },
+      "Screen_6_Classic": { capacity: 150, tier: "Standard" }
+    };
+
+    const SLOT_HOURS = {
+      "Morning": 10,
+      "Matinee": 13,
+      "Evening_Prime": 17,
+      "Night_Prime": 20,
+      "Late_Night": 23
+    };
+
+    function updateDaysSlider(val) {
+      const badge = document.getElementById("coldStartBadge");
+      const label = document.getElementById("daysVal");
+      if (parseInt(val) <= 3) {
+        label.innerHTML = `${val} day(s) <span style="color:#fbbf24;">(Cold-Start)</span>`;
+        badge.style.display = "inline-block";
+      } else {
+        label.innerHTML = `${val} days (Established)`;
+        badge.style.display = "none";
+      }
+    }
+
+    function handleScreenChange() {
+      const scr = document.getElementById("screen_id").value;
+      const cap = SCREEN_SPECS[scr].capacity;
+      const prebookInput = document.getElementById("prebooking_pace_t24");
+      prebookInput.max = cap;
+      if (parseInt(prebookInput.value) > cap) {
+        prebookInput.value = Math.round(cap * 0.5);
+      }
+      updatePrebookHelper();
+    }
+
+    function updatePrebookHelper() {
+      const scr = document.getElementById("screen_id").value;
+      const cap = SCREEN_SPECS[scr].capacity;
+      const val = parseInt(document.getElementById("prebooking_pace_t24").value) || 0;
+      const pct = Math.round((val / cap) * 100);
+      document.getElementById("prebookRatioVal").innerText = `~${pct}% of hall`;
+    }
+
+    function switchTab(tab) {
+      if (tab === 'forecast') {
+        document.getElementById('forecastTab').style.display = 'grid';
+        document.getElementById('metricsTab').style.display = 'none';
+        document.getElementById('tabForecastBtn').classList.add('active');
+        document.getElementById('tabMetricsBtn').classList.remove('active');
+      } else {
+        document.getElementById('forecastTab').style.display = 'none';
+        document.getElementById('metricsTab').style.display = 'block';
+        document.getElementById('tabForecastBtn').classList.remove('active');
+        document.getElementById('tabMetricsBtn').classList.add('active');
+        loadMetrics();
+      }
+    }
+
+    function applyPreset(preset) {
+      if (preset === 'imax_blockbuster') {
+        document.getElementById('movie_title').value = "Aegis Protocol";
+        document.getElementById('genre').value = "Action_SciFi";
+        document.getElementById('screen_id').value = "Screen_1_IMAX";
+        document.getElementById('time_slot').value = "Night_Prime";
+        document.getElementById('ticket_price').value = "22.50";
+        document.getElementById('days_since_release').value = "1";
+        document.getElementById('critic_rating').value = "8.7";
+        document.getElementById('star_power').value = "9.5";
+        document.getElementById('prebooking_pace_t24').value = "220";
+        document.getElementById('is_weekend').checked = true;
+        document.getElementById('is_holiday').checked = false;
+      } else if (preset === 'midweek_drama') {
+        document.getElementById('movie_title').value = "The Silent Canvas";
+        document.getElementById('genre').value = "Drama";
+        document.getElementById('screen_id').value = "Screen_4_MidB";
+        document.getElementById('time_slot').value = "Matinee";
+        document.getElementById('ticket_price').value = "11.00";
+        document.getElementById('days_since_release').value = "18";
+        document.getElementById('critic_rating').value = "8.9";
+        document.getElementById('star_power').value = "6.5";
+        document.getElementById('prebooking_pace_t24').value = "45";
+        document.getElementById('is_weekend').checked = false;
+        document.getElementById('is_holiday').checked = false;
+      } else if (preset === 'family_weekend') {
+        document.getElementById('movie_title').value = "Penguin Kingdom";
+        document.getElementById('genre').value = "Animation_Family";
+        document.getElementById('screen_id').value = "Screen_3_MidA";
+        document.getElementById('time_slot').value = "Matinee";
+        document.getElementById('ticket_price').value = "13.50";
+        document.getElementById('days_since_release').value = "8";
+        document.getElementById('critic_rating').value = "8.3";
+        document.getElementById('star_power').value = "7.0";
+        document.getElementById('prebooking_pace_t24').value = "120";
+        document.getElementById('is_weekend').checked = true;
+        document.getElementById('is_holiday').checked = false;
+      } else if (preset === 'vip_prime') {
+        document.getElementById('movie_title').value = "Parallel Hearts";
+        document.getElementById('genre').value = "Romantic_Drama";
+        document.getElementById('screen_id').value = "Screen_5_VIP";
+        document.getElementById('time_slot').value = "Night_Prime";
+        document.getElementById('ticket_price').value = "34.00";
+        document.getElementById('days_since_release').value = "4";
+        document.getElementById('critic_rating').value = "7.8";
+        document.getElementById('star_power').value = "7.9";
+        document.getElementById('prebooking_pace_t24').value = "52";
+        document.getElementById('is_weekend').checked = true;
+        document.getElementById('is_holiday').checked = true;
+      }
+      updateDaysSlider(document.getElementById('days_since_release').value);
+      handleScreenChange();
+      document.getElementById('ratingVal').innerText = document.getElementById('critic_rating').value + ' / 10';
+      document.getElementById('starVal').innerText = document.getElementById('star_power').value + ' / 10';
+      handleForecastSubmit(new Event('submit'));
+    }
+
+    async function handleForecastSubmit(e) {
+      if (e) e.preventDefault();
+      const scr = document.getElementById("screen_id").value;
+      const screenInfo = SCREEN_SPECS[scr];
+      const slot = document.getElementById("time_slot").value;
+      const days = parseInt(document.getElementById("days_since_release").value);
+
+      const payload = {
+        movie_title: document.getElementById("movie_title").value,
+        genre: document.getElementById("genre").value,
+        critic_rating: parseFloat(document.getElementById("critic_rating").value),
+        star_power: parseFloat(document.getElementById("star_power").value),
+        runtime_minutes: 120,
+        days_since_release: days,
+        is_cold_start: days <= 3 ? 1 : 0,
+        screen_id: scr,
+        screen_tier: screenInfo.tier,
+        screen_capacity: screenInfo.capacity,
+        ticket_price: parseFloat(document.getElementById("ticket_price").value),
+        time_slot: slot,
+        show_hour: SLOT_HOURS[slot] || 17,
+        day_of_week: document.getElementById("is_weekend").checked ? 5 : 2,
+        is_weekend: document.getElementById("is_weekend").checked ? 1 : 0,
+        is_holiday: document.getElementById("is_holiday").checked ? 1 : 0,
+        competing_releases_count: 4,
+        prebooking_pace_t24: parseInt(document.getElementById("prebooking_pace_t24").value),
+        historical_movie_avg_occupancy: 0.55
+      };
+
+      try {
+        const res = await fetch("/explain", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(payload)
+        });
+        const data = await res.json();
+        renderResults(data);
+      } catch (err) {
+        alert("Error connecting to inference API: " + err.message);
+      }
+    }
+
+    function renderResults(data) {
+      document.getElementById("outputPlaceholder").style.display = "none";
+      document.getElementById("resultsContent").style.display = "block";
+
+      document.getElementById("resPredictedTickets").innerText = data.predicted_tickets;
+      document.getElementById("resCapacity").innerText = data.screen_capacity;
+      document.getElementById("resOccupancy").innerText = data.predicted_occupancy_pct + "%";
+      document.getElementById("occupancyFill").style.width = Math.min(100, data.predicted_occupancy_pct) + "%";
+
+      const ci = data.confidence_interval_80;
+      document.getElementById("resLower").innerText = ci.lower_bound;
+      document.getElementById("resUpper").innerText = ci.upper_bound;
+      document.getElementById("resMargin").innerText = Math.round(ci.interval_width_tickets / 2);
+
+      // Cold start banner
+      const cs = data.cold_start_diagnostic;
+      if (cs && cs.is_cold_start) {
+        document.getElementById("coldStartAlert").style.display = "flex";
+        document.getElementById("coldStartText").innerText = cs.message;
+      } else {
+        document.getElementById("coldStartAlert").style.display = "none";
+      }
+
+      // Staffing
+      const staff = data.staffing_recommendation;
+      document.getElementById("staffConcessions").innerText = staff.concession_staff;
+      document.getElementById("staffUshers").innerText = staff.ushers;
+      document.getElementById("staffCleaning").innerText = staff.cleaning_crew;
+
+      // Screen advisory
+      const adv = data.screen_allocation_advisory;
+      document.getElementById("advisoryTitle").innerText = `${adv.recommendation}: ${adv.risk}`;
+      document.getElementById("advisoryMessage").innerText = adv.message;
+
+      // Key drivers
+      const driversEl = document.getElementById("driversContainer");
+      driversEl.innerHTML = "";
+      data.key_drivers.forEach(d => {
+        const el = document.createElement("div");
+        el.className = "driver-pill";
+        el.innerHTML = `
+          <div class="driver-head">${d.factor} <span style="font-size:0.75rem; color:#60a5fa;">(${d.value})</span></div>
+          <div class="driver-desc">${d.impact}</div>
+        `;
+        driversEl.appendChild(el);
+      });
+    }
+
+    async function loadMetrics() {
+      try {
+        const res = await fetch("/metrics");
+        const data = await res.json();
+        const tbody = document.getElementById("metricsTableBody");
+        tbody.innerHTML = "";
+
+        const comp = data.model_comparison || {};
+        for (const [name, info] of Object.entries(comp)) {
+          const m = info.test_metrics;
+          const isChamp = name === data.champion_model;
+          const tr = document.createElement("tr");
+          tr.innerHTML = `
+            <td><strong>${name}</strong> ${isChamp ? '<span class="badge-champion">Champion</span>' : ''}</td>
+            <td>${m.MAE}</td>
+            <td>${m.RMSE}</td>
+            <td><strong>${m.WAPE_pct}%</strong></td>
+            <td>${m.Occupancy_MAE_pct}%</td>
+            <td>${m.Capacity_Overrun_pct}%</td>
+            <td><span style="color:${isChamp ? '#34d399' : '#9ca3af'}">${isChamp ? 'Selected for Deployment' : 'Benchmarked'}</span></td>
+          `;
+          tbody.appendChild(tr);
+        }
+
+        // Subgroups
+        const champSub = comp[data.champion_model]?.subgroup_test_metrics;
+        if (champSub) {
+          document.getElementById("subgroupColdStart").innerHTML = `
+            <p>• <strong>Cold-Start Shows (Days 0-3):</strong> MAE = ${champSub.cold_start_mae} tickets</p>
+            <p style="margin-top:4px;">• <strong>Mature Release Shows (>3 Days):</strong> MAE = ${champSub.mature_release_mae} tickets</p>
+          `;
+          document.getElementById("subgroupScreenTier").innerHTML = `
+            <p>• <strong>Weekend Shows:</strong> MAE = ${champSub.weekend_mae} tickets</p>
+            <p style="margin-top:4px;">• <strong>Weekday Shows:</strong> MAE = ${champSub.weekday_mae} tickets</p>
+          `;
+        }
+      } catch (err) {
+        console.error("Failed to load metrics:", err);
+      }
+    }
+
+    // Initial load
+    updateDaysSlider(1);
+    updatePrebookHelper();
+    handleForecastSubmit();
+  </script>
+</body>
+</html>
